@@ -17,11 +17,12 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql2insert = base_sql + values.join( ',' ) + post_sql
 
-    if primary_key.blank? || options[:no_returning]
+    returning_columns = options[:returning].present? ? options[:returning] : primary_key
+    if returning_columns.blank? || options[:no_returning]
       insert( sql2insert, *args )
     else
-      ids = if primary_key.is_a?( Array )
-        # Select composite primary keys
+      ids = if returning_columns.is_a?( Array )
+        # Select composite columns
         select_rows( sql2insert, *args )
       else
         select_values( sql2insert, *args )
@@ -50,9 +51,11 @@ module ActiveRecord::Import::PostgreSQLAdapter
 
     sql += super(table_name, options)
 
-    unless options[:primary_key].blank? || options[:no_returning]
-      primary_key = Array(options[:primary_key])
-      sql << " RETURNING \"#{primary_key.join('", "')}\""
+    returning_columns = options[:returning].present? ? options[:returning] : options[:primary_key]
+
+    unless returning_columns.blank? || options[:no_returning]
+      returning_columns = Array(returning_columns)
+      sql << " RETURNING \"#{returning_columns.join('", "')}\""
     end
 
     sql
