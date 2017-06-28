@@ -61,6 +61,19 @@ def should_support_postgresql_import_functionality
         assert_equal [], Book.import(books, no_returning: true).ids
       end
     end
+
+    describe "returning" do
+      let(:books) { [Book.new(author_name: "King", title: "It")] }
+      let(:result) { Book.import(books, returning: %w(author_name title)) }
+
+      it "creates records" do
+        assert_difference("Book.count", +1) { result }
+      end
+
+      it "returns specified columns" do
+        assert_equal [%w(King It)], result.ids
+      end
+    end
   end
 
   if ENV['AR_VERSION'].to_f >= 4.0
