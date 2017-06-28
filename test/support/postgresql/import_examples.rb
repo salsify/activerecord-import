@@ -65,13 +65,33 @@ def should_support_postgresql_import_functionality
     describe "returning" do
       let(:books) { [Book.new(author_name: "King", title: "It")] }
       let(:result) { Book.import(books, returning: %w(author_name title)) }
+      let(:book_id) { books.first.id.to_s }
 
       it "creates records" do
         assert_difference("Book.count", +1) { result }
       end
 
+      it "returns ids" do
+        result
+        assert_equal [book_id], result.ids
+      end
+
       it "returns specified columns" do
-        assert_equal [%w(King It)], result.ids
+        assert_equal [%w(King It)], result.results
+      end
+
+      context "when primary key and returning overlap" do
+        let(:result) { Book.import(books, returning: %w(id title)) }
+
+        setup { result }
+
+        it "returns ids" do
+          assert_equal [book_id], result.ids
+        end
+
+        it "returns specified columns" do
+          assert_equal [[book_id, 'It']], result.results
+        end
       end
     end
   end
