@@ -65,7 +65,13 @@ def should_support_postgresql_import_functionality
     describe "returning" do
       let(:books) { [Book.new(author_name: "King", title: "It")] }
       let(:result) { Book.import(books, returning: %w(author_name title)) }
-      let(:book_id) { ENV['AR_VERSION'].to_i >= 5.0 ? books.first.id : books.first.id.to_s }
+      let(:book_id) do
+        if RUBY_PLATFORM == 'java' || ENV['AR_VERSION'].to_i >= 5.0
+          books.first.id
+        else
+          books.first.id.to_s
+        end
+      end
 
       it "creates records" do
         assert_difference("Book.count", +1) { result }
