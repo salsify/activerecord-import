@@ -34,11 +34,11 @@ def should_support_postgresql_import_functionality
       end
 
       it "marks models as clean" do
-        assert_not topic.changed?
+        assert !topic.changed?
       end
 
       it "marks models as persisted" do
-        assert_not topic.new_record?
+        assert !topic.new_record?
         assert topic.persisted?
       end
 
